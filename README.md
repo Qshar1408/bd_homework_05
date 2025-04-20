@@ -17,6 +17,15 @@ where date(p.payment_date) = '2005-07-30' and p.payment_date = r.rental_date and
 - перечислите узкие места;
 - оптимизируйте запрос: внесите корректировки по использованию операторов, при необходимости добавьте индексы.
 
+#### Узкие места перечислены здесь:
+
+```bash
+-> Temporary table with deduplication  (cost=0..0 rows=0) (actual time=4381..4381 rows=391 loops=1)
+-> Window aggregate with buffering: sum(payment.amount) OVER (PARTITION BY c.customer_id,f.title )   (actual time=1876..4203 rows=642000 loops=1)
+-> Sort: c.customer_id, f.title  (actual time=1876..1918 rows=642000 loops=1)
+```
+
+
 ## Дополнительные задания (со звёздочкой*)
 Эти задания дополнительные, то есть не обязательные к выполнению, и никак не повлияют на получение вами зачёта по этому домашнему заданию. Вы можете их выполнить, если хотите глубже шире разобраться в материале.
 
