@@ -32,7 +32,7 @@ where date(p.payment_date) = '2005-07-30' and p.payment_date = r.rental_date and
 
 #### Оптимизация запроса:
 
-Удаляем из запроса таблицу film, оператор distinct и оконную функцию. Добавляем GROUP BY.
+1.Удаляем из запроса таблицу film, оператор distinct и оконную функцию. Добавляем GROUP BY.
 
 ```bash
 EXPLAIN ANALYZE
@@ -42,6 +42,39 @@ where date(p.payment_date) = '2005-07-30' and p.payment_date = r.rental_date and
 GROUP BY concat(c.last_name, ' ', c.first_name);
 ```
  ![bd_005](https://github.com/Qshar1408/bd_homework_05/blob/main/img/bd_05_003.png)
+
+ 2.Выполняем объединение таблиц в запросе, использую оператор join:
+
+ ```bash
+select concat(c.last_name, ' ', c.first_name), sum(p.amount)
+from customer c
+join rental r on r.customer_id = c.customer_id
+join payment p on p.payment_date = r.rental_date and date(p.payment_date) = '2005-07-30'
+group by c.last_name, c.first_name;
+```
+
+ ![bd_005](https://github.com/Qshar1408/bd_homework_05/blob/main/img/bd_05_004.png)
+
+3.Для таблицы payment на столбец payment_date создаем индекс
+
+```bash
+select *
+from INFORMATION_SCHEMA.STATISTICS
+where TABLE_NAME='payment';
+
+create index idx_payment_date on payment(payment_date);
+
+select concat(c.last_name, ' ', c.first_name), sum(p.amount)
+from payment p, rental r, customer c
+where p.payment_date >= '2005-07-30 00:00:00' and p.payment_date < date_add('2005-07-30 00:00:00', interval 1 day) and p.payment_date = r.rental_date and r.customer_id = c.customer_id
+group by c.last_name, c.first_name;
+
+drop index idx_payment_date on payment;
+```
+
+ ![bd_005](https://github.com/Qshar1408/bd_homework_05/blob/main/img/bd_05_005.png)
+
+
 
 ## Дополнительные задания (со звёздочкой*)
 Эти задания дополнительные, то есть не обязательные к выполнению, и никак не повлияют на получение вами зачёта по этому домашнему заданию. Вы можете их выполнить, если хотите глубже шире разобраться в материале.
